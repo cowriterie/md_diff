@@ -193,11 +193,6 @@ class Application (object):
             for k, v in escapes.iteritems():
                 html = html.replace(k, v)
 
-            # Make sure HTML knows we're dealing with unicode content
-            header = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />\n'
-
-            html = header + html
-
             # Finally, write out the results. We're done!
             fd.write(html.encode("UTF-8"))
 
