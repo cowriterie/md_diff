@@ -1,0 +1,7 @@
+<p>This is a test of the emergency diff system</p>
+
+<p>This<span style='background-color: #d88'>entire line will be missing in the new change</span></p>
+
+<p><span style='background-color: #d88'>This</span> is <span style='background-color: #d88'>a</span><span style='background-color: #8d8'>yet another</span> paragraph with<span style='background-color: #d88'>no</span> missing words <span style='background-color: #8d8'>and changed phrasing</span></p>
+
+<h2>Header 2</h2>
