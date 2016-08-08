@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import contextlib
@@ -97,7 +97,7 @@ class Application (object):
 
     def diff_from_branch(self, working_tree_dir, branch, word_diff=False):
         with temp_chdir(working_tree_dir):
-            args = ['git', 'diff', '%s..master' % branch, '--unified=2000']
+            args = ['git', 'diff', 'master..%s' % branch, '--unified=2000']
             if word_diff:
                 args.append('--word-diff')
             p = Popen(args, stdout=PIPE, stderr=STDOUT)
@@ -135,7 +135,7 @@ class Application (object):
                     end_line += 1
                     if end_line >= len(diff):
                         raise Exception("No end for last diff file")
-                print "found %s from lines %d to %d" % (m.group(1), cur_line, end_line)
+                print("found %s from lines %d to %d" % (m.group(1), cur_line, end_line))
 
                 # Ugly ugly, but it works. Remove all of the git lines and replace with a div
                 if cur_line == 0:
@@ -161,10 +161,10 @@ class Application (object):
 
             if line:
                 if line[0] == "-":
-                    line = "<span style='background-color: #d88'>%s</span>" % line[1:]
+                    line = "<span style='background-color: #d88'>%s</span><br>" % line[1:]
 
                 if line[0] == "+":
-                    line = "<span style='background-color: #8d8'>%s</span>" % line[1:]
+                    line = "<span style='background-color: #8d8'>%s</span><br>" % line[1:]
             outlines.append(line.strip())
 
         return outlines
@@ -177,7 +177,6 @@ class Application (object):
         # Generate html from the markdown and feed it into the html file template
         with open(outfile, "w") as fd:
             text = "\n".join(outlines)
-            print text
             markdown_text = markdown2.markdown(text)
             html = self.render_template("diff.html", {"markdown":markdown_text})
 
@@ -194,8 +193,13 @@ class Application (object):
             for k, v in escapes.iteritems():
                 html = html.replace(k, v)
 
+            # Make sure HTML knows we're dealing with unicode content
+            header = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />\n'
+
+            html = header + html
+
             # Finally, write out the results. We're done!
-            fd.write(html.encode("iso-8859-1", "replace"))
+            fd.write(html.encode("UTF-8"))
 
 
 
