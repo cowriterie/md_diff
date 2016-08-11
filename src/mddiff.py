@@ -67,7 +67,7 @@ class Application (object):
                     raise ArgumentException("Choose a sha or a branch, not both")
                 diff = self.diff_from_sha(args.repo, args.sha, args.word_diff)
             elif args.branch:
-                diff = self.diff_from_branch(args.repo, args.branch)
+                diff = self.diff_from_branch(args.repo, args.branch, args.word_diff)
             else:
                 raise ArgumentException("Must use --sha or --branch with --repo")
 
@@ -97,13 +97,15 @@ class Application (object):
 
     def diff_from_branch(self, working_tree_dir, branch, word_diff=False):
         with temp_chdir(working_tree_dir):
-            args = ['git', 'diff', 'master..%s' % branch, '--unified=2000']
+            args = ['git', 'diff', 'chapter_0..%s' % branch, '--unified=2000']
             if word_diff:
                 args.append('--word-diff')
             p = Popen(args, stdout=PIPE, stderr=STDOUT)
             output, err = p.communicate()
             if err:
                 raise Exception("Failed git call: %s" % str(err))
+
+            output = output.decode('UTF-8')
             return output.split("\n")
 
 
@@ -156,7 +158,7 @@ class Application (object):
 
         # For each line, replace and write out
         for line in diff:
-            for k, v in replacements.iteritems():
+            for k, v in replacements.items():
                 line = line.replace(k, v)
 
             if line:
@@ -190,11 +192,11 @@ class Application (object):
                 u"\u2013": "&ndash;",
                 u"\u2018": "'"
             }
-            for k, v in escapes.iteritems():
+            for k, v in escapes.items():
                 html = html.replace(k, v)
 
             # Finally, write out the results. We're done!
-            fd.write(html.encode("UTF-8"))
+            fd.write(html)
 
 
 
