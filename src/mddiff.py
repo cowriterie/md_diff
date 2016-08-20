@@ -97,7 +97,7 @@ class Application (object):
 
     def diff_from_branch(self, working_tree_dir, branch, word_diff=False):
         with temp_chdir(working_tree_dir):
-            args = ['git', 'diff', 'chapter_0..%s' % branch, '--unified=2000']
+            args = ['git', 'diff', '%s' % branch, '--unified=2000']
             if word_diff:
                 args.append('--word-diff')
             p = Popen(args, stdout=PIPE, stderr=STDOUT)
@@ -203,4 +203,3 @@ class Application (object):
 
 if __name__ == "__main__":
     Application().run()
-    #generate_diff_markdown("../test/test_anh.diff", "../test/out.html");
