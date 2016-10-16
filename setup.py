@@ -6,7 +6,10 @@ setup(
     author='Chris Gibson',
     author_email='cgibson@mrvoxel.com',
     license='MIT',
-    packages=find_packages(),
+    py_modules=['mddiff.mddiff'],
+    data_files=[
+        ('templates', ['mddiff/templates/*']),
+    ],
     install_requires=[
         'Jinja2>=2.8',
         'markdown2==2.3.1',
