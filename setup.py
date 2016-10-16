@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+import os
+
+datadir = "src/templates"
+datafiles = [(d, [os.path.join(d,f) for f in files])
+    for d, folders, files in os.walk(datadir)]
 
 setup(
     name='md-diff',
@@ -6,10 +11,8 @@ setup(
     author='Chris Gibson',
     author_email='cgibson@mrvoxel.com',
     license='MIT',
-    py_modules=['mddiff.mddiff'],
-    data_files=[
-        ('templates', ['mddiff/templates']),
-    ],
+    packages = find_packages(),
+    data_files=datafiles,
     install_requires=[
         'Jinja2>=2.8',
         'markdown2==2.3.1',
