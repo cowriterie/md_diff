@@ -8,7 +8,7 @@ setup(
     license='MIT',
     py_modules=['mddiff.mddiff'],
     data_files=[
-        ('templates', ['mddiff/templates/*']),
+        ('templates', ['mddiff/templates']),
     ],
     install_requires=[
         'Jinja2>=2.8',
