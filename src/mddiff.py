@@ -6,14 +6,12 @@ import re
 import argparse
 
 import markdown2
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, PackageLoader
 
 from subprocess import Popen, STDOUT, PIPE
-
-PATH = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_ENVIRONMENT = Environment(
     autoescape=False,
-    loader=FileSystemLoader(os.path.join(PATH, 'templates')),
+    loader=PackageLoader(__name__, "templates"),
     trim_blocks=False)
 
 
