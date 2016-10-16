@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-datadir = "src/templates"
+datadir = "mddiff/templates"
 datafiles = [(d, [os.path.join(d,f) for f in files])
     for d, folders, files in os.walk(datadir)]
 
