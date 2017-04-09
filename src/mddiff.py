@@ -26,25 +26,28 @@ def temp_chdir(path):
     finally:
         os.chdir(starting_directory)
 
-class ArgumentException (Exception):
+
+class ArgumentException(Exception):
     pass
 
-class Application (object):
+
+class Application(object):
     def run(self):
         parser = argparse.ArgumentParser(description='Create a human-readable markdown diff.')
         parser.add_argument('--outfile', dest='outfile', help='set the output file path.')
         parser.add_argument('--diff', dest='diff', help='set the input diff path.')
         parser.add_argument('--stdin', dest='stdin', help='set the input diff path.')
         parser.add_argument('--repo', dest='repo', help='set the path of the repository (use with --sha)')
-        parser.add_argument('--sha', dest='sha', help='set the change sha (use with --repo)')
-        parser.add_argument('--branch', dest='branch', help='get the whole diff of a branch (use with --repo)')
-        parser.add_argument('--word-diff', dest='word_diff', help='whether or not the diff is a word-level or line-level diff', action='store_true')
+        parser.add_argument('--ref', dest='ref',
+                            help='set the ref (branch, sha, etc) to diff against (use with --repo)')
+        parser.add_argument('--word-diff', dest='word_diff',
+                            help='whether or not the diff is a word-level or line-level diff', action='store_true')
         args = parser.parse_args();
 
         # Three different ways to get patch data
         #   1. File (via --diff)
         #   2. Standard input (--stdin)
-        #   3. Via a repository (using a sha or a branch)
+        #   3. Via a repository (using a ref)
         #
         # None of these may overlap
 
@@ -62,14 +65,10 @@ class Application (object):
         elif args.stdin:
             diff = self.diff_from_stdin()
         elif args.repo:
-            if args.sha:
-                if args.branch:
-                    raise ArgumentException("Choose a sha or a branch, not both")
-                diff = self.diff_from_sha(args.repo, args.sha, args.word_diff)
-            elif args.branch:
-                diff = self.diff_from_branch(args.repo, args.branch, args.word_diff)
+            if args.ref:
+                diff = self.diff_from_ref(args.repo, args.ref, args.word_diff)
             else:
-                raise ArgumentException("Must use --sha or --branch with --repo")
+                raise ArgumentException("Must use --ref with --repo")
 
         if args.outfile:
             out_file = args.outfile
@@ -78,26 +77,12 @@ class Application (object):
 
         self.generate_diff_markdown(diff, out_file)
 
-
     def diff_from_stdin(self):
         raise NotImplementedError()
 
-
-    def diff_from_sha(self, working_tree_dir, sha, word_diff=False):
+    def diff_from_ref(self, working_tree_dir, ref, word_diff=False):
         with temp_chdir(working_tree_dir):
-            args = ['git', 'show', sha, '--unified=2000']
-            if word_diff:
-                args.append('--word-diff')
-            p = Popen(args, stdout=PIPE, stderr=STDOUT)
-            output, err = p.communicate()
-            if err:
-                raise Exception("Failed git call: %s" % str(err))
-            return output.split("\n")
-
-
-    def diff_from_branch(self, working_tree_dir, branch, word_diff=False):
-        with temp_chdir(working_tree_dir):
-            args = ['git', 'diff', '%s' % branch, '--unified=2000']
+            args = ['git', 'diff', '%s' % ref, '--unified=2000']
             if word_diff:
                 args.append('--word-diff')
             p = Popen(args, stdout=PIPE, stderr=STDOUT)
@@ -107,8 +92,6 @@ class Application (object):
 
             output = output.decode('UTF-8')
             return output.split("\n")
-
-
 
     def render_template(self, template_filename, context):
         return TEMPLATE_ENVIRONMENT.get_template(template_filename).render(context)
@@ -141,9 +124,9 @@ class Application (object):
 
                 # Ugly ugly, but it works. Remove all of the git lines and replace with a div
                 if cur_line == 0:
-                    diff = diff[end_line+1:]
+                    diff = diff[end_line + 1:]
                 else:
-                    diff = diff[:cur_line] + diff[end_line+1:]
+                    diff = diff[:cur_line] + diff[end_line + 1:]
                 diff.insert(cur_line, "<div class=\"file\">File: %s</div>\n" % m.group(1))
             else:
                 cur_line += 1
@@ -175,19 +158,18 @@ class Application (object):
 
         outlines = self.diff_replace(diff)
 
-
         # Generate html from the markdown and feed it into the html file template
         with open(outfile, "w") as fd:
             text = "\n".join(outlines)
             markdown_text = markdown2.markdown(text)
-            html = self.render_template("diff.html", {"markdown":markdown_text})
+            html = self.render_template("diff.html", {"markdown": markdown_text})
 
             # Condition code to include proper html escapes
             escapes = {
                 u"\u2026": "&hellip;",
                 u"\u011b": "&#283;",
-                u"\xe0":   "&agrave;",
-                u"\xf3":   "&oacute;",
+                u"\xe0": "&agrave;",
+                u"\xf3": "&oacute;",
                 u"\u2012": "&#8210;",
                 u"\u2013": "&ndash;",
                 u"\u2018": "'"
@@ -197,8 +179,6 @@ class Application (object):
 
             # Finally, write out the results. We're done!
             fd.write(html)
-
-
 
 
 if __name__ == "__main__":
